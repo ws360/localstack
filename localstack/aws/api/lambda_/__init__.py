@@ -1,6 +1,6 @@
 import sys
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import IO, Dict, Iterable, List, Optional, Union
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
@@ -1087,25 +1087,25 @@ class GetProvisionedConcurrencyConfigResponse(TypedDict, total=False):
 
 
 class InvocationRequest(ServiceRequest):
+    Payload: Optional[IO[Blob]]
     FunctionName: NamespacedFunctionName
     InvocationType: Optional[InvocationType]
     LogType: Optional[LogType]
     ClientContext: Optional[String]
-    Payload: Optional[Blob]
     Qualifier: Optional[Qualifier]
 
 
 class InvocationResponse(TypedDict, total=False):
+    Payload: Optional[Union[Blob, IO[Blob], Iterable[Blob]]]
     StatusCode: Optional[Integer]
     FunctionError: Optional[String]
     LogResult: Optional[String]
-    Payload: Optional[Blob]
     ExecutedVersion: Optional[Version]
 
 
 class InvokeAsyncRequest(ServiceRequest):
+    InvokeArgs: IO[BlobStream]
     FunctionName: NamespacedFunctionName
-    InvokeArgs: BlobStream
 
 
 class InvokeAsyncResponse(TypedDict, total=False):
@@ -1774,7 +1774,7 @@ class LambdaApi:
         invocation_type: InvocationType = None,
         log_type: LogType = None,
         client_context: String = None,
-        payload: Blob = None,
+        payload: IO[Blob] = None,
         qualifier: Qualifier = None,
     ) -> InvocationResponse:
         raise NotImplementedError
@@ -1784,7 +1784,7 @@ class LambdaApi:
         self,
         context: RequestContext,
         function_name: NamespacedFunctionName,
-        invoke_args: BlobStream,
+        invoke_args: IO[BlobStream],
     ) -> InvokeAsyncResponse:
         raise NotImplementedError
 
