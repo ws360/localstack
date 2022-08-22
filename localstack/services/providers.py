@@ -187,7 +187,7 @@ def kms():
     return Service("kms", listener=AwsApiListener("kms", provider))
 
 
-@aws_provider(api="lambda")
+@aws_provider(api="lambda", name="legacy")
 def awslambda():
     from localstack.services.awslambda import lambda_starter
 
@@ -199,7 +199,7 @@ def awslambda():
     )
 
 
-@aws_provider(api="lambda", name="asf")
+@aws_provider(api="lambda")
 def awslambda_asf():
     from localstack.aws.proxy import AwsApiListener
     from localstack.services.awslambda.provider import LambdaProvider
