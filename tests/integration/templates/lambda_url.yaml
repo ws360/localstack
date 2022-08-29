@@ -21,7 +21,7 @@ Resources:
       Code:
         ZipFile: |
           def handler(event, context):
-              return {"hello": "world"}
+              return {{ returnvalue }}
       Role:
         Fn::GetAtt:
           - FunctionServiceRole675BB04A

@@ -162,12 +162,26 @@ def test_lambda_w_dynamodb_event_filter(
         "$..content-length",
     ]
 )
-def test_cfn_function_url(deploy_cfn_template, cfn_client, lambda_client, snapshot):
+@pytest.mark.parametrize(
+    "returnvalue",
+    [
+        '{"hello": "world"}',
+        '{"statusCode": 200, "body": "body123"}',
+        '{"statusCode": 200, "body": "{\\"hello\\": \\"world\\"}"}',
+        '["hello", 3, True]',
+        '"hello"',
+        "3",
+        "3.1",
+        "True",
+    ],
+)
+def test_cfn_function_url(deploy_cfn_template, cfn_client, lambda_client, snapshot, returnvalue):
     snapshot.add_transformer(snapshot.transform.cloudformation_api())
     snapshot.add_transformer(snapshot.transform.lambda_api())
 
     deploy = deploy_cfn_template(
-        template_path=os.path.join(os.path.dirname(__file__), "../templates/lambda_url.yaml")
+        template_path=os.path.join(os.path.dirname(__file__), "../templates/lambda_url.yaml"),
+        template_mapping={"returnvalue": returnvalue},
     )
 
     url_logical_resource_id = "UrlD4FAABD0"
@@ -204,7 +218,8 @@ def test_cfn_function_url(deploy_cfn_template, cfn_client, lambda_client, snapsh
 
     response = safe_requests.get(deploy.outputs["LambdaUrl"])
     assert response.ok
-    assert response.json() == {"hello": "world"}
+
+    snapshot.match("response_text", response.text)
 
     lowered_headers = {k.lower(): v for k, v in response.headers.items()}
     snapshot.match("response_headers", lowered_headers)

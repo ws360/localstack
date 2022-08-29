@@ -1,6 +1,6 @@
 {
-  "tests/integration/cloudformation/test_cloudformation_lambda.py::test_cfn_function_url": {
-    "recorded-date": "26-08-2022, 16:45:07",
+  "tests/integration/cloudformation/test_cloudformation_lambda.py::test_cfn_function_url[{\"hello\": \"world\"}]": {
+    "recorded-date": "29-08-2022, 18:41:37",
     "recorded-content": {
       "url_resource": {
         "ResponseMetadata": {
@@ -55,9 +55,541 @@
           "HTTPStatusCode": 200
         }
       },
+      "response_text": {
+        "hello": "world"
+      },
       "response_headers": {
         "connection": "keep-alive",
         "content-length": "17",
+        "content-type": "application/json",
+        "date": "date",
+        "x-amzn-requestid": "<uuid:1>",
+        "x-amzn-trace-id": "x-amzn-trace-id"
+      }
+    }
+  },
+  "tests/integration/cloudformation/test_cloudformation_lambda.py::test_cfn_function_url[\"hello\"]": {
+    "recorded-date": "29-08-2022, 18:46:32",
+    "recorded-content": {
+      "url_resource": {
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        },
+        "StackResourceDetail": {
+          "DriftInformation": {
+            "StackResourceDriftStatus": "NOT_CHECKED"
+          },
+          "LastUpdatedTimestamp": "timestamp",
+          "LogicalResourceId": "<url_logical_resource_id>",
+          "Metadata": {},
+          "PhysicalResourceId": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+          "ResourceStatus": "CREATE_COMPLETE",
+          "ResourceType": "AWS::Lambda::Url",
+          "StackId": "arn:aws:cloudformation:<region>:111111111111:stack/<stack-name:1>/<resource:2>",
+          "StackName": "<stack-name:1>"
+        }
+      },
+      "url_config": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "exception_url_config_nonexistent_version": {
+        "Error": {
+          "Code": "ResourceNotFoundException",
+          "Message": "The resource you requested does not exist."
+        },
+        "Message": "The resource you requested does not exist.",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 404
+        },
+        "Type": "User"
+      },
+      "url_config_arn": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "response_text": "hello",
+      "response_headers": {
+        "connection": "keep-alive",
+        "content-length": "5",
+        "content-type": "application/json",
+        "date": "date",
+        "x-amzn-requestid": "<uuid:1>",
+        "x-amzn-trace-id": "x-amzn-trace-id"
+      }
+    }
+  },
+  "tests/integration/cloudformation/test_cloudformation_lambda.py::test_cfn_function_url[3]": {
+    "recorded-date": "29-08-2022, 18:47:46",
+    "recorded-content": {
+      "url_resource": {
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        },
+        "StackResourceDetail": {
+          "DriftInformation": {
+            "StackResourceDriftStatus": "NOT_CHECKED"
+          },
+          "LastUpdatedTimestamp": "timestamp",
+          "LogicalResourceId": "<url_logical_resource_id>",
+          "Metadata": {},
+          "PhysicalResourceId": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+          "ResourceStatus": "CREATE_COMPLETE",
+          "ResourceType": "AWS::Lambda::Url",
+          "StackId": "arn:aws:cloudformation:<region>:111111111111:stack/<stack-name:1>/<resource:2>",
+          "StackName": "<stack-name:1>"
+        }
+      },
+      "url_config": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "exception_url_config_nonexistent_version": {
+        "Error": {
+          "Code": "ResourceNotFoundException",
+          "Message": "The resource you requested does not exist."
+        },
+        "Message": "The resource you requested does not exist.",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 404
+        },
+        "Type": "User"
+      },
+      "url_config_arn": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "response_text": "3",
+      "response_headers": {
+        "connection": "keep-alive",
+        "content-length": "1",
+        "content-type": "application/json",
+        "date": "date",
+        "x-amzn-requestid": "<uuid:1>",
+        "x-amzn-trace-id": "x-amzn-trace-id"
+      }
+    }
+  },
+  "tests/integration/cloudformation/test_cloudformation_lambda.py::test_cfn_function_url[True]": {
+    "recorded-date": "29-08-2022, 18:50:14",
+    "recorded-content": {
+      "url_resource": {
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        },
+        "StackResourceDetail": {
+          "DriftInformation": {
+            "StackResourceDriftStatus": "NOT_CHECKED"
+          },
+          "LastUpdatedTimestamp": "timestamp",
+          "LogicalResourceId": "<url_logical_resource_id>",
+          "Metadata": {},
+          "PhysicalResourceId": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+          "ResourceStatus": "CREATE_COMPLETE",
+          "ResourceType": "AWS::Lambda::Url",
+          "StackId": "arn:aws:cloudformation:<region>:111111111111:stack/<stack-name:1>/<resource:2>",
+          "StackName": "<stack-name:1>"
+        }
+      },
+      "url_config": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "exception_url_config_nonexistent_version": {
+        "Error": {
+          "Code": "ResourceNotFoundException",
+          "Message": "The resource you requested does not exist."
+        },
+        "Message": "The resource you requested does not exist.",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 404
+        },
+        "Type": "User"
+      },
+      "url_config_arn": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "response_text": "true",
+      "response_headers": {
+        "connection": "keep-alive",
+        "content-length": "4",
+        "content-type": "application/json",
+        "date": "date",
+        "x-amzn-requestid": "<uuid:1>",
+        "x-amzn-trace-id": "x-amzn-trace-id"
+      }
+    }
+  },
+  "tests/integration/cloudformation/test_cloudformation_lambda.py::test_cfn_function_url[{\"statusCode\": 200, \"body\": \"body123\"}]": {
+    "recorded-date": "29-08-2022, 18:42:51",
+    "recorded-content": {
+      "url_resource": {
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        },
+        "StackResourceDetail": {
+          "DriftInformation": {
+            "StackResourceDriftStatus": "NOT_CHECKED"
+          },
+          "LastUpdatedTimestamp": "timestamp",
+          "LogicalResourceId": "<url_logical_resource_id>",
+          "Metadata": {},
+          "PhysicalResourceId": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+          "ResourceStatus": "CREATE_COMPLETE",
+          "ResourceType": "AWS::Lambda::Url",
+          "StackId": "arn:aws:cloudformation:<region>:111111111111:stack/<stack-name:1>/<resource:2>",
+          "StackName": "<stack-name:1>"
+        }
+      },
+      "url_config": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "exception_url_config_nonexistent_version": {
+        "Error": {
+          "Code": "ResourceNotFoundException",
+          "Message": "The resource you requested does not exist."
+        },
+        "Message": "The resource you requested does not exist.",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 404
+        },
+        "Type": "User"
+      },
+      "url_config_arn": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "response_text": "body123",
+      "response_headers": {
+        "connection": "keep-alive",
+        "content-length": "7",
+        "content-type": "application/json",
+        "date": "date",
+        "x-amzn-requestid": "<uuid:1>",
+        "x-amzn-trace-id": "x-amzn-trace-id"
+      }
+    }
+  },
+  "tests/integration/cloudformation/test_cloudformation_lambda.py::test_cfn_function_url[{\"statusCode\": 200, \"body\": \"{\"hello\": \"world\"}\"}]": {
+    "recorded-date": "29-08-2022, 17:24:36",
+    "recorded-content": {
+      "url_resource": {
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        },
+        "StackResourceDetail": {
+          "DriftInformation": {
+            "StackResourceDriftStatus": "NOT_CHECKED"
+          },
+          "LastUpdatedTimestamp": "timestamp",
+          "LogicalResourceId": "<url_logical_resource_id>",
+          "Metadata": {},
+          "PhysicalResourceId": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+          "ResourceStatus": "CREATE_COMPLETE",
+          "ResourceType": "AWS::Lambda::Url",
+          "StackId": "arn:aws:cloudformation:<region>:111111111111:stack/<stack-name:1>/<resource:2>",
+          "StackName": "<stack-name:1>"
+        }
+      },
+      "url_config": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "exception_url_config_nonexistent_version": {
+        "Error": {
+          "Code": "ResourceNotFoundException",
+          "Message": "The resource you requested does not exist."
+        },
+        "Message": "The resource you requested does not exist.",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 404
+        },
+        "Type": "User"
+      },
+      "url_config_arn": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      }
+    }
+  },
+  "tests/integration/cloudformation/test_cloudformation_lambda.py::test_cfn_function_url[[\"hello\", 3, True]]": {
+    "recorded-date": "29-08-2022, 18:45:19",
+    "recorded-content": {
+      "url_resource": {
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        },
+        "StackResourceDetail": {
+          "DriftInformation": {
+            "StackResourceDriftStatus": "NOT_CHECKED"
+          },
+          "LastUpdatedTimestamp": "timestamp",
+          "LogicalResourceId": "<url_logical_resource_id>",
+          "Metadata": {},
+          "PhysicalResourceId": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+          "ResourceStatus": "CREATE_COMPLETE",
+          "ResourceType": "AWS::Lambda::Url",
+          "StackId": "arn:aws:cloudformation:<region>:111111111111:stack/<stack-name:1>/<resource:2>",
+          "StackName": "<stack-name:1>"
+        }
+      },
+      "url_config": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "exception_url_config_nonexistent_version": {
+        "Error": {
+          "Code": "ResourceNotFoundException",
+          "Message": "The resource you requested does not exist."
+        },
+        "Message": "The resource you requested does not exist.",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 404
+        },
+        "Type": "User"
+      },
+      "url_config_arn": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "response_text": "[\"hello\",3,true]",
+      "response_headers": {
+        "connection": "keep-alive",
+        "content-length": "16",
+        "content-type": "application/json",
+        "date": "date",
+        "x-amzn-requestid": "<uuid:1>",
+        "x-amzn-trace-id": "x-amzn-trace-id"
+      }
+    }
+  },
+  "tests/integration/cloudformation/test_cloudformation_lambda.py::test_cfn_function_url[3.1]": {
+    "recorded-date": "29-08-2022, 18:49:00",
+    "recorded-content": {
+      "url_resource": {
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        },
+        "StackResourceDetail": {
+          "DriftInformation": {
+            "StackResourceDriftStatus": "NOT_CHECKED"
+          },
+          "LastUpdatedTimestamp": "timestamp",
+          "LogicalResourceId": "<url_logical_resource_id>",
+          "Metadata": {},
+          "PhysicalResourceId": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+          "ResourceStatus": "CREATE_COMPLETE",
+          "ResourceType": "AWS::Lambda::Url",
+          "StackId": "arn:aws:cloudformation:<region>:111111111111:stack/<stack-name:1>/<resource:2>",
+          "StackName": "<stack-name:1>"
+        }
+      },
+      "url_config": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "exception_url_config_nonexistent_version": {
+        "Error": {
+          "Code": "ResourceNotFoundException",
+          "Message": "The resource you requested does not exist."
+        },
+        "Message": "The resource you requested does not exist.",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 404
+        },
+        "Type": "User"
+      },
+      "url_config_arn": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "response_text": "3.1",
+      "response_headers": {
+        "connection": "keep-alive",
+        "content-length": "3",
+        "content-type": "application/json",
+        "date": "date",
+        "x-amzn-requestid": "<uuid:1>",
+        "x-amzn-trace-id": "x-amzn-trace-id"
+      }
+    }
+  },
+  "tests/integration/cloudformation/test_cloudformation_lambda.py::test_cfn_function_url[{\"statusCode\": 200, \"body\": \"{\\\\\"hello\\\\\": \\\\\"world\\\\\"}\"}]": {
+    "recorded-date": "29-08-2022, 18:44:05",
+    "recorded-content": {
+      "url_resource": {
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        },
+        "StackResourceDetail": {
+          "DriftInformation": {
+            "StackResourceDriftStatus": "NOT_CHECKED"
+          },
+          "LastUpdatedTimestamp": "timestamp",
+          "LogicalResourceId": "<url_logical_resource_id>",
+          "Metadata": {},
+          "PhysicalResourceId": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+          "ResourceStatus": "CREATE_COMPLETE",
+          "ResourceType": "AWS::Lambda::Url",
+          "StackId": "arn:aws:cloudformation:<region>:111111111111:stack/<stack-name:1>/<resource:2>",
+          "StackName": "<stack-name:1>"
+        }
+      },
+      "url_config": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "exception_url_config_nonexistent_version": {
+        "Error": {
+          "Code": "ResourceNotFoundException",
+          "Message": "The resource you requested does not exist."
+        },
+        "Message": "The resource you requested does not exist.",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 404
+        },
+        "Type": "User"
+      },
+      "url_config_arn": {
+        "AuthType": "NONE",
+        "CreationTime": "date",
+        "FunctionArn": "arn:aws:lambda:<region>:111111111111:function:<resource:1>",
+        "FunctionUrl": "<function-url:1>",
+        "LastModifiedTime": "date",
+        "ResponseMetadata": {
+          "HTTPHeaders": {},
+          "HTTPStatusCode": 200
+        }
+      },
+      "response_text": {
+        "hello": "world"
+      },
+      "response_headers": {
+        "connection": "keep-alive",
+        "content-length": "18",
         "content-type": "application/json",
         "date": "date",
         "x-amzn-requestid": "<uuid:1>",
