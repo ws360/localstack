@@ -21,8 +21,23 @@ class HttpClient(abc.ABC):
         """
         raise NotImplementedError
 
+    def close(self):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
 
 class SimpleRequestsClient(HttpClient):
+    def __init__(self):
+        self.session = requests.Session()
+
+    def close(self):
+        self.session.close()
+
     def request(self, request: Request) -> Response:
         """
         Very naive implementation to make the given HTTP request using the requests library, i.e., process the request
@@ -35,10 +50,12 @@ class SimpleRequestsClient(HttpClient):
         :param request: the request to perform
         :return: the response.
         """
-        response = requests.request(
+        response = self.session.request(
             method=request.method,
             url=request.url,
-            params=request.args,
+            params=[
+                (k, v) for k, v in request.args.items(multi=True)
+            ],  # args are only the URL params
             headers=request.headers,
             data=restore_payload(request),
         )
@@ -57,4 +74,5 @@ def make_request(request: Request) -> Response:
     :param request: the request to make
     :return: the response.
     """
-    return SimpleRequestsClient().request(request)
+    with SimpleRequestsClient() as client:
+        return client.request(request)
