@@ -163,11 +163,20 @@ class S3Bucket(GenericBaseModel):
             except ClientError as e:
                 if e.response["Error"]["Message"] == "Not Found":
                     bucket_name = props.get("BucketName")
-                    s3_client.create_bucket(
-                        Bucket=bucket_name,
-                        ACL=convert_acl_cf_to_s3(props.get("AccessControl", "PublicRead")),
-                        CreateBucketConfiguration={"LocationConstraint": aws_stack.get_region()},
-                    )
+                    if aws_stack.get_region() != "us-east-1":
+                        # aws throws an error when location constraint is set for default region us-east-1 (so does boto-core)
+                        s3_client.create_bucket(
+                            Bucket=bucket_name,
+                            ACL=convert_acl_cf_to_s3(props.get("AccessControl", "PublicRead")),
+                            CreateBucketConfiguration={
+                                "LocationConstraint": aws_stack.get_region()
+                            },
+                        )
+                    else:
+                        s3_client.create_bucket(
+                            Bucket=bucket_name,
+                            ACL=convert_acl_cf_to_s3(props.get("AccessControl", "PublicRead")),
+                        )
 
         result = {
             "create": [
