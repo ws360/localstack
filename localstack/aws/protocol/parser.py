@@ -87,6 +87,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 
 from localstack.aws.api import HttpRequest
 from localstack.aws.protocol.op_router import RestServiceOperationRouter
+from localstack.config import LEGACY_S3_PROVIDER
 
 
 def _text_content(func):
@@ -1100,9 +1101,10 @@ def create_parser(service: ServiceModel) -> RequestParser:
     # within the parser implementations, the service-specific parser implementations (basically the implicit /
     # informally more specific protocol implementation) has precedence over the more general protocol-specific parsers.
     service_specific_parsers = {
-        "s3": S3RequestParser,
         "sqs": SQSRequestParser,
     }
+    if LEGACY_S3_PROVIDER:
+        service_specific_parsers["s3"] = S3RequestParser
     protocol_specific_parsers = {
         "query": QueryRequestParser,
         "json": JSONRequestParser,

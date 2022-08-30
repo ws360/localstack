@@ -395,6 +395,9 @@ USE_SSL = is_env_true("USE_SSL")
 # whether to use the legacy edge proxy or the newer Gateway/HandlerChain framework
 LEGACY_EDGE_PROXY = is_env_true("LEGACY_EDGE_PROXY")
 
+# whether to use the legacy s3 provider, or the new ASF s3 provider
+LEGACY_S3_PROVIDER = is_env_true("LEGACY_S3_PROVIDER")
+
 # Whether to report internal failures as 500 or 501 errors.
 FAIL_FAST = is_env_true("FAIL_FAST")
 
