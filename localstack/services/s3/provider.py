@@ -88,42 +88,57 @@ class S3Provider(S3Api, ServiceLifecycleHook):
 
         # path style: https://s3.region-code.amazonaws.com/bucket-name/key-name
         # host_pattern_path_style = f"s3.<regex('({AWS_REGION_REGEX}\.)?'):region>{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
-        host_pattern_path_style = f"s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
+        # host_pattern_path_style = f"s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
 
-        ROUTER.add(
-            f"/{bucket}/<path:path>",
-            host=host_pattern_path_style,
-            endpoint=self.serve_bucket_content,
-            # methods=["GET"] TODO if I enable this, put-object does not work anymore
-            #                     raise MethodNotAllowed(valid_methods=list(have_match_for))
-            #                     E       werkzeug.exceptions.MethodNotAllowed: 405 Method Not Allowed: The method is not allowed for the requested URL
-            # defaults={"region": None}
-        )
+        # ROUTER.add(
+        #     f"/{bucket}/<path:path>",
+        #     host=host_pattern_path_style,
+        #     endpoint=self.serve_bucket_content,
+        #     # methods=["GET"] TODO if I enable this, put-object does not work anymore
+        #     #                     raise MethodNotAllowed(valid_methods=list(have_match_for))
+        #     #                     E       werkzeug.exceptions.MethodNotAllowed: 405 Method Not Allowed: The method is not allowed for the requested URL
+        #     # defaults={"region": None}
+        # )
         # virtual-host style: https://bucket-name.s3.region-code.amazonaws.com/key-name
         # host_pattern_vhost_style = f"{bucket}.s3.<regex('({AWS_REGION_REGEX}\.)?'):region>{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
-        # host_pattern_vhost_style = f"{bucket}.s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
-        #
-        # ROUTER.add(
-        #     f"/<path:path>",
-        #     host=host_pattern_vhost_style,
-        #     # host=f"{bucket}.s3.localhost.localstack.cloud:4566",
-        #     defaults={"region": None},
-        #     endpoint=self.serve_bucket_content,
-        #     methods=["GET"],
-        # )
+        host_pattern_vhost_style = f"{bucket}.s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
+
+        ROUTER.add(
+            "/<path:path>",
+            host=host_pattern_vhost_style,
+            # defaults={"region": None},
+            endpoint=self.serve_bucket_content,
+            methods=["GET"],
+        )
+        ROUTER.add(
+            "/",
+            host=host_pattern_vhost_style,
+            # defaults={"region": None},
+            endpoint=self.serve_bucket_list,
+            methods=["GET"],
+        )
 
         return response
 
-    def serve_bucket_content(self, request: Request, path: str, region: str = None) -> Response:
-        bucket = request.path.split("/")[1]
+    def serve_bucket_list(self, request: Request) -> Response:
+        bucket = request.url.split("://")[1].split(".")[0]
+        if request.method == "GET":
+            client = aws_stack.connect_to_service("s3")
+            data = client.list_objects(Bucket=bucket)
+            return data  # TODO this should return xml-response
+
+    def serve_bucket_content(self, request: Request, path: str) -> Response:
+        # bucket = request.path.split("/")[1]
+        bucket = request.url.split("://")[1].split(".")[0]
         key = path
         # region = ?
 
         # somehow resolve the bucket key content
         if request.method == "GET":
-            client = aws_stack.connect_to_service("s3")
-            data = client.get_object(Bucket=bucket, Key=key)
-            return Response(response=data)
+            if key:
+                client = aws_stack.connect_to_service("s3")
+                data = client.get_object(Bucket=bucket, Key=key)
+                return Response(data["Body"].read())
 
     @handler("GetObject", expand=False)
     def get_object(self, context: RequestContext, request: GetObjectRequest) -> GetObjectOutput:
