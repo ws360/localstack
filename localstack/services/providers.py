@@ -273,7 +273,11 @@ def s3_asf():
 
     provider = S3Provider()
 
-    return Service("s3", listener=AwsApiListener("s3", MotoFallbackDispatcher(provider)))
+    return Service(
+        "s3",
+        listener=AwsApiListener("s3", MotoFallbackDispatcher(provider)),
+        lifecycle_hook=provider,
+    )
 
 
 @aws_provider()
