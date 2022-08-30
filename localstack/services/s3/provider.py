@@ -24,9 +24,11 @@ from localstack.aws.api.s3 import (
 )
 from localstack.config import get_edge_port_http, get_protocol
 from localstack.constants import LOCALHOST_HOSTNAME, S3_VIRTUAL_HOSTNAME
-from localstack.http import Response
+from localstack.http import Request, Response
+from localstack.services.edge import ROUTER
 from localstack.services.moto import call_moto, proxy_moto
 from localstack.services.plugins import ServiceLifecycleHook
+from localstack.utils.aws import aws_stack
 from localstack.utils.patch import patch
 from localstack.utils.strings import checksum_crc32, checksum_crc32c, hash_sha1, hash_sha256
 
@@ -86,15 +88,17 @@ class S3Provider(S3Api, ServiceLifecycleHook):
 
         # path style: https://s3.region-code.amazonaws.com/bucket-name/key-name
         # host_pattern_path_style = f"s3.<regex('({AWS_REGION_REGEX}\.)?'):region>{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
-        # host_pattern_path_style = f"s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
+        host_pattern_path_style = f"s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
 
-        # ROUTER.add(
-        #     f"/{bucket}/<path:path>",
-        #     host=host_pattern_path_style,
-        #     endpoint=self.serve_bucket_content,
-        #     # methods=["GET"]
-        #     # defaults={"region": None}
-        # )
+        ROUTER.add(
+            f"/{bucket}/<path:path>",
+            host=host_pattern_path_style,
+            endpoint=self.serve_bucket_content,
+            # methods=["GET"] TODO if I enable this, put-object does not work anymore
+            #                     raise MethodNotAllowed(valid_methods=list(have_match_for))
+            #                     E       werkzeug.exceptions.MethodNotAllowed: 405 Method Not Allowed: The method is not allowed for the requested URL
+            # defaults={"region": None}
+        )
         # virtual-host style: https://bucket-name.s3.region-code.amazonaws.com/key-name
         # host_pattern_vhost_style = f"{bucket}.s3.<regex('({AWS_REGION_REGEX}\.)?'):region>{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
         # host_pattern_vhost_style = f"{bucket}.s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
@@ -110,17 +114,16 @@ class S3Provider(S3Api, ServiceLifecycleHook):
 
         return response
 
-    # def serve_bucket_content(self, request: Request, path: str, region: str = None) -> Response:
-    #     bucket = request.path.split("/")[1]
-    #     key = path
-    #     # region = ?
-    #
-    #     # somehow resolve the bucket key content
-    #     # data =  # resolve
-    #     if request.method == "GET":
-    #         data = self.get_object(request, bucket=bucket, key=key)
-    #
-    #     return Response(response=data)
+    def serve_bucket_content(self, request: Request, path: str, region: str = None) -> Response:
+        bucket = request.path.split("/")[1]
+        key = path
+        # region = ?
+
+        # somehow resolve the bucket key content
+        if request.method == "GET":
+            client = aws_stack.connect_to_service("s3")
+            data = client.get_object(Bucket=bucket, Key=key)
+            return Response(response=data)
 
     @handler("GetObject", expand=False)
     def get_object(self, context: RequestContext, request: GetObjectRequest) -> GetObjectOutput:
