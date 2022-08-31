@@ -1,3 +1,4 @@
+import logging
 import os
 from urllib.parse import quote
 
@@ -6,27 +7,22 @@ from moto.s3 import s3_backends
 
 from localstack.aws.api import CommonServiceException, RequestContext, handler
 from localstack.aws.api.s3 import (
-    AccountId,
-    BucketName,
-    ChecksumAlgorithm,
-    ConfirmRemoveSelfBucketAccess,
-    ContentMD5,
     CreateBucketOutput,
     CreateBucketRequest,
     GetObjectOutput,
     GetObjectRequest,
     ListObjectsOutput,
     ListObjectsRequest,
-    Policy,
     PutObjectOutput,
     PutObjectRequest,
     S3Api,
 )
+from localstack.aws.forwarder import create_aws_request_context
+from localstack.aws.protocol.serializer import S3ResponseSerializer
 from localstack.config import get_edge_port_http, get_protocol
 from localstack.constants import LOCALHOST_HOSTNAME, S3_VIRTUAL_HOSTNAME
 from localstack.http import Request, Response
-from localstack.services.edge import ROUTER
-from localstack.services.moto import call_moto, proxy_moto
+from localstack.services.moto import call_moto
 from localstack.services.plugins import ServiceLifecycleHook
 from localstack.utils.aws import aws_stack
 from localstack.utils.patch import patch
@@ -35,6 +31,8 @@ from localstack.utils.strings import checksum_crc32, checksum_crc32c, hash_sha1,
 os.environ[
     "MOTO_S3_CUSTOM_ENDPOINTS"
 ] = f"s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()},{S3_VIRTUAL_HOSTNAME}"
+
+LOG = logging.getLogger(__name__)
 
 
 class InvalidRequestError(CommonServiceException):
@@ -47,9 +45,19 @@ def s3_global_backend():
     return s3_backends["global"]
 
 
+def _create_context(request, operation_name, params=None):
+    context = create_aws_request_context(
+        service_name="s3", action=operation_name, parameters=params
+    )
+    # TODO doesn't work for curl requests
+    context.request = request
+    return context
+
+
 class S3Provider(S3Api, ServiceLifecycleHook):
     def on_after_init(self):
         self.apply_patches()
+        LOG.debug("-----> s3provider")
 
     def apply_patches(self):
         @patch(s3_responses.S3Response._bucket_response_head)
@@ -67,6 +75,13 @@ class S3Provider(S3Api, ServiceLifecycleHook):
                 code, headers, body = result
                 bucket = s3_global_backend().get_bucket(bucket_name)
                 headers["x-amz-bucket-region"] = bucket.region_name
+            return result
+
+        @patch(s3_responses.S3Response._bucket_response_put)
+        def _bucket_response_put(fn, self, request, region_name, bucket_name, querystring):
+            result = fn(self, request, region_name, bucket_name, querystring)
+            if "policy" in querystring:
+                return 204, {}, ""
             return result
 
     @handler("CreateBucket", expand=False)
@@ -87,36 +102,35 @@ class S3Provider(S3Api, ServiceLifecycleHook):
             response["Location"] = f"/{bucket}"
 
         # path style: https://s3.region-code.amazonaws.com/bucket-name/key-name
+
+        # TODO consider region?
         # host_pattern_path_style = f"s3.<regex('({AWS_REGION_REGEX}\.)?'):region>{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
         # host_pattern_path_style = f"s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
 
+        # TODO routes interfere with other put/get requests by botocore
         # ROUTER.add(
-        #     f"/{bucket}/<path:path>",
-        #     host=host_pattern_path_style,
+        #     f"/<regex('{bucket}'):bucket>/<path:path>",
         #     endpoint=self.serve_bucket_content,
-        #     # methods=["GET"] TODO if I enable this, put-object does not work anymore
-        #     #                     raise MethodNotAllowed(valid_methods=list(have_match_for))
-        #     #                     E       werkzeug.exceptions.MethodNotAllowed: 405 Method Not Allowed: The method is not allowed for the requested URL
-        #     # defaults={"region": None}
         # )
+        # ROUTER.add(
+        #     f"/<regex('{bucket}'):bucket>",
+        #     endpoint=self.serve_bucket_content,
+        #     defaults={"path": ""},
+        #     methods=["GET"],
+        # )
+
         # virtual-host style: https://bucket-name.s3.region-code.amazonaws.com/key-name
         # host_pattern_vhost_style = f"{bucket}.s3.<regex('({AWS_REGION_REGEX}\.)?'):region>{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
-        host_pattern_vhost_style = f"{bucket}.s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
-
-        ROUTER.add(
-            "/<path:path>",
-            host=host_pattern_vhost_style,
-            # defaults={"region": None},
-            endpoint=self.serve_bucket_content,
-            methods=["GET"],
-        )
-        ROUTER.add(
-            "/",
-            host=host_pattern_vhost_style,
-            # defaults={"region": None},
-            endpoint=self.serve_bucket_list,
-            methods=["GET"],
-        )
+        # TODO this rule does not work yet
+        # host_pattern_vhost_style = f"{bucket}.s3.{LOCALHOST_HOSTNAME}:{get_edge_port_http()}"
+        #
+        # ROUTER.add(
+        #     "/<path:path>",
+        #     host=host_pattern_vhost_style,
+        #     defaults={"path": "", "bucket": ""},
+        #     endpoint=self.serve_bucket_content,
+        #     methods=["GET"],
+        # )
 
         return response
 
@@ -127,18 +141,50 @@ class S3Provider(S3Api, ServiceLifecycleHook):
             data = client.list_objects(Bucket=bucket)
             return data  # TODO this should return xml-response
 
-    def serve_bucket_content(self, request: Request, path: str) -> Response:
+    def serve_bucket_content(self, request: Request, bucket: str, path: str) -> Response:
         # bucket = request.path.split("/")[1]
-        bucket = request.url.split("://")[1].split(".")[0]
+        LOG.debug("------> serve_bucket_content")
+        if not bucket and not path:
+            # TODO is this actual expected, should be prevented?
+            # internal request was re-routed
+            splitted = request.url.split("://")[1].split("/")
+            if len(splitted) == 3:
+                bucket = splitted[-2]
+                path = [-1]
+            elif len(splitted) == 2:
+                bucket = [-1]
+            else:
+                LOG.error(f"unexpected input for server_bucket_content from url {request.url}")
+        if not bucket:
+            bucket = request.url.split("://")[1].split(".")[0]
         key = path
         # region = ?
 
-        # somehow resolve the bucket key content
         if request.method == "GET":
             if key:
-                client = aws_stack.connect_to_service("s3")
-                data = client.get_object(Bucket=bucket, Key=key)
+                get_object_request = GetObjectRequest(Bucket=bucket, Key=key)
+                # TODO handle not found
+                # TODO request does not work for url (only get-object) -> request header?
+                data = self.get_object(
+                    _create_context(request, "GetObject", {"Bucket": bucket, "Key": key}),
+                    get_object_request,
+                )
                 return Response(data["Body"].read())
+            else:
+                context = _create_context(request, "ListObjects", {"Bucket": bucket})
+                data = self.list_objects(
+                    context,
+                    ListObjectsRequest(Bucket=bucket),
+                )
+                serializer = S3ResponseSerializer()
+                return serializer.serialize_to_response(data, context.operation, request.headers)
+
+        if request.method == "PUT":
+            if key:
+                # TODO is this enough?
+                return call_moto(
+                    _create_context(request, "PutObject", {"Bucket": bucket, "Key": key})
+                )
 
     @handler("GetObject", expand=False)
     def get_object(self, context: RequestContext, request: GetObjectRequest) -> GetObjectOutput:
@@ -158,27 +204,10 @@ class S3Provider(S3Api, ServiceLifecycleHook):
             response["Delimiter"] = quote(response["Delimiter"])
         return ListObjectsOutput(response)
 
-    def put_bucket_policy(
-        self,
-        context: RequestContext,
-        bucket: BucketName,
-        policy: Policy,
-        content_md5: ContentMD5 = None,
-        checksum_algorithm: ChecksumAlgorithm = None,
-        confirm_remove_self_bucket_access: ConfirmRemoveSelfBucketAccess = None,
-        expected_bucket_owner: AccountId = None,
-    ) -> Response:
-        response = proxy_moto(context)
-        if response.status_code == 200:
-            response.status_code = 204
-        return response
-
     @handler("PutObject", expand=False)
     def put_object(self, context: RequestContext, request: PutObjectRequest) -> PutObjectOutput:
         if context.request.headers.get("x-amz-sdk-checksum-algorithm"):
-            # TODO - data is gone after reading once
-            # data = request.get("Body").read()
-            data = b"test"
+            data = context.request.data  # TODO
             _validate_checksum(data, context.request.headers)
         response = call_moto(context)
         return PutObjectOutput(response)
