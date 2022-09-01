@@ -3,7 +3,6 @@ import os
 from urllib.parse import quote
 
 from moto.s3 import responses as s3_responses
-from moto.s3 import s3_backends
 
 from localstack.aws.api import CommonServiceException, RequestContext, handler
 from localstack.aws.api.s3 import (
@@ -40,11 +39,6 @@ class InvalidRequestError(CommonServiceException):
         super().__init__("InvalidRequest", message, 400, True)
 
 
-def s3_global_backend():
-    """Return the single/global backend used by moto"""
-    return s3_backends["global"]
-
-
 def _create_context(request, operation_name, params=None):
     context = create_aws_request_context(
         service_name="s3", action=operation_name, parameters=params
@@ -58,24 +52,6 @@ class S3Provider(S3Api, ServiceLifecycleHook):
     def on_after_init(self):
         self.apply_patches()
         LOG.debug("-----> s3provider")
-
-    def apply_patches(self):
-        @patch(s3_responses.S3Response._bucket_response_head)
-        def _bucket_response_head(fn, self, bucket_name, *args, **kwargs):
-            code, headers, body = fn(self, bucket_name, *args, **kwargs)
-            bucket = s3_global_backend().get_bucket(bucket_name)
-            headers["x-amz-bucket-region"] = bucket.region_name
-            return code, headers, body
-
-        @patch(s3_responses.S3Response._bucket_response_get)
-        def _bucket_response_get(fn, self, bucket_name, querystring, *args, **kwargs):
-            result = fn(self, bucket_name, querystring, *args, **kwargs)
-            # for some reason in the "get-bucket-location" call, moto doesn't return a code/headers/body triple as a result
-            if isinstance(result, tuple) and len(result) == 3:
-                code, headers, body = result
-                bucket = s3_global_backend().get_bucket(bucket_name)
-                headers["x-amz-bucket-region"] = bucket.region_name
-            return result
 
         @patch(s3_responses.S3Response._bucket_response_put)
         def _bucket_response_put(fn, self, request, region_name, bucket_name, querystring):
