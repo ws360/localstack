@@ -168,6 +168,21 @@ def _filter_header(param: dict) -> dict:
 
 
 class TestS3:
+    def test_upload_download_large_file(self, s3_client, s3_create_bucket, s3_multipart_upload):
+        bucket_name = f"test-{short_uid()}"
+        object_key = f"my-object-{short_uid()}"
+        s3_create_bucket(Bucket=bucket_name)
+        data = "hello this is a upload test" * 1000000
+        # doesnt matter if multi-part or not
+        # s3_multipart_upload(bucket_name, object_key, data)
+        s3_client.put_object(Bucket=bucket_name, Key=object_key, Body=data)
+
+        # download stuck with asf provider
+        resp = s3_client.get_object(
+            Bucket=bucket_name, Key=object_key, Range="bytes=0-8388607"
+        )  # 8388607
+        assert resp
+
     @pytest.mark.aws_validated
     @pytest.mark.skip_snapshot_verify(paths=["$..EncodingType"])
     def test_region_header_exists(self, s3_client, s3_create_bucket, snapshot):
