@@ -40,6 +40,12 @@ class _ResponseStream(io.RawIOBase):
         except StopIteration:
             return 0  # indicate EOF
 
+    def __next__(self):
+        return next(self.iterator)
+
+    def __iter__(self):
+        return self.iterator
+
     def __str__(self):
         length = self.response.content_length
         if length is None:
