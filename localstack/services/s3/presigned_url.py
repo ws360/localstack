@@ -404,9 +404,9 @@ def _prepare_request_for_sig_v4_signature(
             if header_low in IGNORED_SIGV4_HEADERS:
                 continue
             if header_low not in signed_headers.lower():
-                not_signed_headers.append(header)
+                not_signed_headers.append(header_low)
         if header_low in signed_headers:
-            signature_headers[header] = value
+            signature_headers[header_low] = value
 
     if not_signed_headers:
         ex: AccessDenied = create_access_denied_headers_not_signed(", ".join(not_signed_headers))

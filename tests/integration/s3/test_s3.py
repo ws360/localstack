@@ -2413,7 +2413,7 @@ class TestS3PresignedUrl:
             snapshot.match("with-decoded-content-length", exception)
 
         # old provider does not raise the right error message
-        if LEGACY_S3_PROVIDER or (signature_version == "s3" and is_aws_cloud()):
+        if LEGACY_S3_PROVIDER or signature_version == "s3":
             assert b"SignatureDoesNotMatch" in result.content
         # we are either using s3v4 with new provider or whichever signature against AWS
         else:
@@ -2426,7 +2426,7 @@ class TestS3PresignedUrl:
         if snapshotted:
             exception = xmltodict.parse(result.content)
             snapshot.match("without-decoded-content-length", exception)
-        if LEGACY_S3_PROVIDER or (signature_version == "s3" and is_aws_cloud()):
+        if LEGACY_S3_PROVIDER or signature_version == "s3":
             assert b"SignatureDoesNotMatch" in result.content
         else:
             assert b"AccessDenied" in result.content
