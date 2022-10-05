@@ -17,6 +17,7 @@ from localstack.aws.api.s3 import (
     ContentMD5,
     CopyObjectOutput,
     CopyObjectRequest,
+    CORSConfiguration,
     CreateBucketOutput,
     CreateBucketRequest,
     DeleteObjectOutput,
@@ -58,7 +59,11 @@ from localstack.aws.api.s3 import (
 )
 from localstack.aws.api.s3 import Type as GranteeType
 from localstack.aws.api.s3 import WebsiteConfiguration
-from localstack.aws.handlers import modify_service_response, serve_custom_service_request_handlers
+from localstack.aws.handlers import (
+    modify_service_response,
+    preprocess_request,
+    serve_custom_service_request_handlers,
+)
 from localstack.config import get_edge_port_http, get_protocol
 from localstack.constants import LOCALHOST_HOSTNAME
 from localstack.http import Request, Response
@@ -66,6 +71,7 @@ from localstack.http.proxy import forward
 from localstack.services.edge import ROUTER
 from localstack.services.moto import call_moto
 from localstack.services.plugins import ServiceLifecycleHook
+from localstack.services.s3.cors import S3CorsHandler
 from localstack.services.s3.models import S3Store, get_moto_s3_backend, s3_stores
 from localstack.services.s3.notifications import NotificationDispatcher, S3EventNotificationContext
 from localstack.services.s3.presigned_url import (
@@ -139,10 +145,12 @@ class S3Provider(S3Api, ServiceLifecycleHook):
         self.add_custom_routes()
         register_website_hosting_routes(router=ROUTER)
         register_custom_handlers()
+        preprocess_request.append(self._cors_handler)
 
     def __init__(self) -> None:
         super().__init__()
         self._notification_dispatcher = NotificationDispatcher()
+        self._cors_handler = S3CorsHandler()
 
     def on_before_stop(self):
         self._notification_dispatcher.shutdown()
@@ -448,6 +456,28 @@ class S3Provider(S3Api, ServiceLifecycleHook):
 
         store = self.get_store()
         store.bucket_lifecycle_configuration.pop(bucket, None)
+
+    def put_bucket_cors(
+        self,
+        context: RequestContext,
+        bucket: BucketName,
+        cors_configuration: CORSConfiguration,
+        content_md5: ContentMD5 = None,
+        checksum_algorithm: ChecksumAlgorithm = None,
+        expected_bucket_owner: AccountId = None,
+    ) -> None:
+        response = call_moto(context)
+        self.get_store().bucket_cors[bucket] = cors_configuration
+        self._cors_handler.invalidate_cache()
+        return response
+
+    def delete_bucket_cors(
+        self, context: RequestContext, bucket: BucketName, expected_bucket_owner: AccountId = None
+    ) -> None:
+        response = call_moto(context)
+        self.get_store().bucket_cors.pop(bucket)
+        self._cors_handler.invalidate_cache()
+        return response
 
     def get_bucket_acl(
         self, context: RequestContext, bucket: BucketName, expected_bucket_owner: AccountId = None

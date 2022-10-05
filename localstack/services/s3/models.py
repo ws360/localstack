@@ -13,7 +13,12 @@ from localstack.aws.api.s3 import (
     WebsiteConfiguration,
 )
 from localstack.constants import DEFAULT_AWS_ACCOUNT_ID
-from localstack.services.stores import AccountRegionBundle, BaseStore, LocalAttribute
+from localstack.services.stores import (
+    AccountRegionBundle,
+    BaseStore,
+    CrossRegionAttribute,
+    LocalAttribute,
+)
 
 
 def get_moto_s3_backend(context: RequestContext = None) -> MotoS3Backend:
@@ -27,8 +32,8 @@ class S3Store(BaseStore):
         default=dict
     )
 
-    # maps bucket name to bucket's CORS settings
-    bucket_cors: Dict[BucketName, CORSConfiguration] = LocalAttribute(default=dict)
+    # maps bucket name to bucket's CORS settings, used as index
+    bucket_cors: Dict[BucketName, CORSConfiguration] = CrossRegionAttribute(default=dict)
 
     # maps bucket name to bucket's replication settings
     bucket_replication: Dict[BucketName, ReplicationConfiguration] = LocalAttribute(default=dict)
@@ -46,4 +51,4 @@ class S3Store(BaseStore):
     )
 
 
-s3_stores = AccountRegionBundle("s3", S3Store)
+s3_stores = AccountRegionBundle[S3Store]("s3", S3Store)
