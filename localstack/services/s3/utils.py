@@ -48,6 +48,8 @@ VALID_CANNED_ACLS = {
     ObjectCannedACL.bucket_owner_read,
     ObjectCannedACL.public_read,
     ObjectCannedACL.public_read_write,
+    # according to docs 'log-delivery-write' is also valid https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
+    "log-delivery-write",  # TODO add to parser? seems to be missing accross services though
 }
 
 VALID_ACL_PREDEFINED_GROUPS = {
