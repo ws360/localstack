@@ -321,6 +321,7 @@ class TestS3:
             Body=b"abc123",
             ContentLanguage="de",
             ContentDisposition='attachment; filename="foo.jpg"',
+            CacheControl="no-cache",
         )
         assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
         snapshot.match("put-object", response)
