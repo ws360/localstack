@@ -276,7 +276,6 @@ s3:
         - TestAccS3Bucket_Security_grantToACL
         - TestAccS3Bucket_Security_corsUpdate
         - TestAccS3Bucket_Security_corsDelete
-        - TestAccS3Bucket_Security_corsEmptyOrigin
         - TestAccS3Bucket_Security_corsSingleMethodAndEmptyOrigin
         - TestAccS3Bucket_Security_logging
         - TestAccS3Bucket_Security_enableDefaultEncryptionWhenTypical
