@@ -46,6 +46,11 @@ class WsgiGateway:
 
         # prepare response
         response = Response()
+        # the response set default content-type, but we will update headers
+        # if we delete them in handlers, this won't get overriden
+        # not sure where to fix this properly?
+        response.mimetype = ""
+        response.headers.pop("Content-Type", None)
 
         self.gateway.process(request, response)
 

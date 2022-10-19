@@ -2887,6 +2887,7 @@ class TestS3PresignedUrl:
         response = requests.put(url, data="content 123", verify=False)
         assert response.ok, f"response returned {response.status_code}: {response.text}"
         # response body should be empty, see https://github.com/localstack/localstack/issues/1317
+        # TODO: check with copy_object, which returns a body normally
         assert not response.text
 
         # assert metadata is present
