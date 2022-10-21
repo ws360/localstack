@@ -2617,6 +2617,63 @@ class TestS3PresignedUrl:
     These tests pertain to S3's presigned URL feature.
     """
 
+    # # Note: This test may have side effects (via `s3_client.meta.events.register(..)`) and
+    # # may not be suitable for parallel execution
+    @pytest.mark.aws_validated
+    def test_presign_with_additional_query_params(
+        self, s3_client, s3_bucket, patch_s3_skip_signature_validation_false
+    ):
+        """related to issue: https://github.com/localstack/localstack/issues/4133"""
+
+        def add_query_param(request, **kwargs):
+            request.url += "?requestedBy=abcDEF123"
+
+        s3_client.put_object(Body="test-value", Bucket=s3_bucket, Key="test")
+        s3_presigned_client = _s3_client_custom_config(
+            Config(signature_version="s3v4"),
+            endpoint_url=_endpoint_url(),
+        )
+        s3_presigned_client.meta.events.register("before-sign.s3.GetObject", add_query_param)
+        try:
+            presign_url = s3_presigned_client.generate_presigned_url(
+                ClientMethod="get_object",
+                Params={"Bucket": s3_bucket, "Key": "test"},
+                ExpiresIn=86400,
+            )
+            assert "requestedBy=abcDEF123" in presign_url
+            response = requests.get(presign_url)
+            assert b"test-value" == response._content
+        finally:
+            s3_presigned_client.meta.events.unregister("before-sign.s3.GetObject", add_query_param)
+
+    @pytest.mark.only_localstack
+    def test_presign_check_signature_validation_for_port_permutation(
+        self, s3_client, s3_bucket, patch_s3_skip_signature_validation_false
+    ):
+        port1 = 443
+        port2 = config.EDGE_PORT
+        _endpoint_url()
+        endpoint = (
+            f"http://{config.LOCALSTACK_HOSTNAME}:{port1}"  # .replace(f":{port2}", f":{port1}")
+        )
+        s3_presign = _s3_client_custom_config(
+            Config(signature_version="s3v4"),
+            endpoint_url=endpoint,
+        )
+
+        s3_client.put_object(Body="test-value", Bucket=s3_bucket, Key="test")
+
+        presign_url = s3_presign.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": s3_bucket, "Key": "test"},
+            ExpiresIn=86400,
+        )
+        assert f":{port1}" in presign_url
+        presign_url = presign_url.replace(f":{port1}", f":{port2}")
+
+        response = requests.get(presign_url)
+        assert b"test-value" == response.content
+
     @pytest.mark.aws_validated
     @pytest.mark.skip_snapshot_verify(
         condition=is_old_provider, paths=["$..VersionId", "$..ContentLanguage", "$..Expires"]
@@ -2693,6 +2750,36 @@ class TestS3PresignedUrl:
         exception["StatusCode"] = response.status_code
         snapshot.match("exception", exception)
         assert response.status_code in [400, 403]
+
+    @pytest.mark.only_localstack
+    @pytest.mark.skipif(
+        condition=LEGACY_S3_PROVIDER,
+        reason="Legacy S3 provider does not skip the signature validation",
+    )
+    def test_get_request_expires_ignored_if_validation_disabled(
+        self, s3_client, s3_bucket, monkeypatch, patch_s3_skip_signature_validation_false
+    ):
+        s3_client.put_object(Body="test-value", Bucket=s3_bucket, Key="test")
+
+        presigned_request = s3_client.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": s3_bucket, "Key": "test"},
+            ExpiresIn=2,
+        )
+        # sleep so it expires
+        time.sleep(3)
+
+        # attempt to use the presigned request
+        response = requests.get(presigned_request)
+        # response should not be successful as it is expired -> signature will not match
+        # "SignatureDoesNotMatch" in str(response.content)
+        assert response.status_code in [400, 403]
+
+        # set skip signature validation to True -> the request should now work
+        monkeypatch.setattr(config, "S3_SKIP_SIGNATURE_VALIDATION", True)
+        response = requests.get(presigned_request)
+        assert response.status_code == 200
+        assert b"test-value" == response.content
 
     @pytest.mark.aws_validated
     @pytest.mark.xfail(
