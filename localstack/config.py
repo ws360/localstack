@@ -564,13 +564,6 @@ KINESIS_MOCK_PERSIST_INTERVAL = os.environ.get("KINESIS_MOCK_PERSIST_INTERVAL", 
 # Kinesis provider - either "kinesis-mock" or "kinesalite" (deprecated, kinesalite support will be removed)
 KINESIS_PROVIDER = os.environ.get("KINESIS_PROVIDER") or "kinesis-mock"
 
-# Whether or not to handle lambda event sources as synchronous invocations
-SYNCHRONOUS_SNS_EVENTS = is_env_true("SYNCHRONOUS_SNS_EVENTS")
-SYNCHRONOUS_SQS_EVENTS = is_env_true("SYNCHRONOUS_SQS_EVENTS")
-SYNCHRONOUS_API_GATEWAY_EVENTS = is_env_not_false("SYNCHRONOUS_API_GATEWAY_EVENTS")
-SYNCHRONOUS_KINESIS_EVENTS = is_env_not_false("SYNCHRONOUS_KINESIS_EVENTS")
-SYNCHRONOUS_DYNAMODB_EVENTS = is_env_not_false("SYNCHRONOUS_DYNAMODB_EVENTS")
-
 # randomly inject faults to Kinesis
 KINESIS_ERROR_PROBABILITY = float(os.environ.get("KINESIS_ERROR_PROBABILITY", "").strip() or 0.0)
 
@@ -787,11 +780,6 @@ CONFIG_ENV_VARS = [
     "SQS_ENDPOINT_STRATEGY",
     "SQS_PORT_EXTERNAL",
     "STEPFUNCTIONS_LAMBDA_ENDPOINT",
-    "SYNCHRONOUS_API_GATEWAY_EVENTS",
-    "SYNCHRONOUS_DYNAMODB_EVENTS",
-    "SYNCHRONOUS_KINESIS_EVENTS",
-    "SYNCHRONOUS_SNS_EVENTS",
-    "SYNCHRONOUS_SQS_EVENTS",
     "TEST_AWS_ACCOUNT_ID",
     "TEST_IAM_USER_ID",
     "TEST_IAM_USER_NAME",
