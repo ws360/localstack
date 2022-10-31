@@ -87,7 +87,7 @@ class ReflectionStateLocator:
         self.provider = provider
 
     def accept(self, visitor: StateVisitor):
-        service: str = self.provider.service
+        service: str = self.provider.service.replace("-", "_")      # needed for services like cognito-idp
 
         # try to load AccountRegionBundle from predictable location
         attribute_name = f"{service}_stores"
