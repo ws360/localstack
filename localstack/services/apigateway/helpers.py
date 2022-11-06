@@ -804,9 +804,7 @@ def get_event_request_context(invocation_context: ApiInvocationContext):
         "authorizer": {},
     }
 
-    # set "authorizer" and "identity" event attributes from request context
-    auth_context = invocation_context.auth_context
-    if auth_context:
+    if auth_context := invocation_context.auth_context:
         request_context["authorizer"] = auth_context
     request_context["identity"].update(invocation_context.auth_identity or {})
 

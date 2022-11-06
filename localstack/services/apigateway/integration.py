@@ -108,8 +108,7 @@ def call_lambda(function_arn: str, event: bytes, asynchronous: bool) -> str:
         Payload=event,
         InvocationType="Event" if asynchronous else "RequestResponse",
     )
-    payload = inv_result.get("Payload")
-    if payload:
+    if payload := inv_result.get("Payload"):
         payload = to_str(payload.read())
         return payload
     return ""
@@ -130,7 +129,7 @@ class LambdaProxyIntegration(BackendIntegration):
         parsed_result = {} if parsed_result is None else parsed_result
 
         keys = parsed_result.keys()
-        if not ("statusCode" in keys and "body" in keys):
+        if "statusCode" not in keys or "body" not in keys:
             LOG.warning(
                 'Lambda output should follow the next JSON format: { "isBase64Encoded": true|false, "statusCode": httpStatusCode, "headers": { "headerName": "headerValue", ... },"body": "..."}'
             )
@@ -492,3 +491,8 @@ class StepFunctionIntegration(BackendIntegration):
         invocation_context.response = response
         response._content = self.response_templates.render(invocation_context)
         return response
+
+
+class EventbridgeIntegration(BackendIntegration):
+    def invoke(self, invocation_context: ApiInvocationContext):
+        pass

@@ -24,7 +24,7 @@ from localstack.services.apigateway.integration import (
     LambdaProxyIntegration,
     MockIntegration,
     SnsIntegration,
-    StepFunctionIntegration,
+    StepFunctionIntegration, EventbridgeIntegration,
 )
 from localstack.services.apigateway.templates import (
     RequestTemplates,
@@ -439,6 +439,13 @@ def invoke_rest_api_integration_backend(invocation_context: ApiInvocationContext
                 invocation_context.stage_variables = helpers.get_stage_variables(invocation_context)
 
                 integration_response = SnsIntegration().invoke(invocation_context)
+                return apply_request_response_templates(
+                    integration_response, response_templates, content_type=APPLICATION_JSON
+                )
+            elif uri.startswith("arn:aws:apigateway:") and "events:action" in uri:
+                invocation_context.context = helpers.get_event_request_context(invocation_context)
+                invocation_context.stage_variables = helpers.get_stage_variables(invocation_context)
+                integration_response = EventbridgeIntegration().invoke(invocation_context)
                 return apply_request_response_templates(
                     integration_response, response_templates, content_type=APPLICATION_JSON
                 )
