@@ -10,7 +10,6 @@ from localstack.constants import APPLICATION_JSON
 from localstack.services.apigateway.context import ApiInvocationContext
 from localstack.utils.aws.templating import VelocityUtil, VtlTemplate
 from localstack.utils.json import extract_jsonpath, json_safe
-from localstack.utils.numbers import is_number, to_number
 from localstack.utils.strings import to_str
 
 LOG = logging.getLogger(__name__)
@@ -87,16 +86,19 @@ class VelocityUtilApiGateway(VelocityUtil):
         return unquote_plus(s)
 
     def escapeJavaScript(self, s):
-        try:
-            return json.dumps(json.loads(s))
-        except Exception:
-            primitive_types = (str, int, bool, float, type(None))
-            s = s if isinstance(s, primitive_types) else str(s)
-        if str(s).strip() in {"true", "false"}:
-            s = bool(s)
-        elif s not in [True, False] and is_number(s):
-            s = to_number(s)
-        return json.dumps(s)
+        """Escapes the characters in a string using JavaScript string rules."""
+        return s.replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
+
+        # try:
+        #     return json.dumps(s)
+        # except Exception:
+        #     primitive_types = (str, int, bool, float, type(None))
+        #     s = s if isinstance(s, primitive_types) else str(s)
+        # if str(s).strip() in {"true", "false"}:
+        #     s = bool(s)
+        # elif s not in [True, False] and is_number(s):
+        #     s = to_number(s)
+        # return json.dumps(s)
 
 
 class VelocityInput:

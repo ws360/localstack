@@ -493,6 +493,30 @@ class StepFunctionIntegration(BackendIntegration):
         return response
 
 
-class EventbridgeIntegration(BackendIntegration):
+class EventBridgeIntegration(BackendIntegration):
     def invoke(self, invocation_context: ApiInvocationContext):
-        pass
+        invocation_context.context = get_event_request_context(invocation_context)
+        try:
+            payload = self.request_templates.render(invocation_context)
+        except Exception as e:
+            LOG.warning("Failed to apply template for SNS integration", e)
+            raise
+        uri = (
+            invocation_context.integration.get("uri")
+            or invocation_context.integration.get("integrationUri")
+            or ""
+        )
+        region_name = uri.split(":")[3]
+        headers = aws_stack.mock_aws_request_headers(service="events", region_name=region_name)
+        headers["X-Amz-Target"] = "AWSEvents.PutEvents"
+        headers["Content-Type"] = "application/x-amz-json-1.1"
+        response = make_http_request(
+            config.service_url("events"), method="POST", headers=headers, data=payload
+        )
+
+        invocation_context.response = response
+
+        response_templates = ResponseTemplates()
+        response_templates.render(invocation_context)
+        invocation_context.response.headers["Content-Length"] = str(len(response.content or ""))
+        return invocation_context.response
