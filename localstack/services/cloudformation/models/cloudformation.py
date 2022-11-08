@@ -18,7 +18,7 @@ class CloudFormationStack(GenericBaseModel):
     def fetch_state(self, stack_name, resources):
         client = aws_stack.connect_to_service("cloudformation")
         child_stack_name = self.props["StackName"]
-        child_stack_name = self.resolve_refs_recursively(stack_name, child_stack_name, resources)
+        child_stack_name = child_stack_name
         result = client.describe_stacks(StackName=child_stack_name)
         result = (result.get("Stacks") or [None])[0]
         return result

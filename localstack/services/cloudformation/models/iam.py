@@ -47,7 +47,6 @@ class IAMManagedPolicy(GenericBaseModel):
             iam = aws_stack.connect_to_service("iam")
             resource = resources[resource_id]
             props = resource["Properties"]
-            cls.resolve_refs_recursively(stack_name, props, resources)
 
             policy_doc = json.dumps(remove_none_values(props["PolicyDocument"]))
             policy = iam.create_policy(
@@ -77,7 +76,7 @@ class IAMUser(GenericBaseModel):
         return self.props.get("UserName")
 
     def fetch_state(self, stack_name, resources):
-        user_name = self.resolve_refs_recursively(stack_name, self.props.get("UserName"), resources)
+        user_name = self.props.get("UserName")
         return aws_stack.connect_to_service("iam").get_user(UserName=user_name)["User"]
 
     def update_resource(self, new_resource, stack_name, resources):
@@ -178,7 +177,7 @@ class IAMAccessKey(GenericBaseModel):
         return self.physical_resource_id
 
     def fetch_state(self, stack_name, resources):
-        user_name = self.resolve_refs_recursively(stack_name, self.props.get("UserName"), resources)
+        user_name = self.props.get("UserName")
         access_key_id = self.get_physical_resource_id()
         if access_key_id:
             keys = aws_stack.connect_to_service("iam").list_access_keys(UserName=user_name)[
@@ -234,7 +233,7 @@ class IAMRole(GenericBaseModel):
         return role_name
 
     def fetch_state(self, stack_name, resources):
-        role_name = self.resolve_refs_recursively(stack_name, self.props.get("RoleName"), resources)
+        role_name = self.props.get("RoleName")
         client = aws_stack.connect_to_service("iam")
         return client.get_role(RoleName=role_name)["Role"]
 
@@ -278,10 +277,6 @@ class IAMRole(GenericBaseModel):
     @staticmethod
     def _post_create(resource_id, resources, resource_type, func, stack_name):
         """attaches managed policies from the template to the role"""
-        from localstack.services.cloudformation.template_deployer import (
-            find_stack,
-            resolve_refs_recursively,
-        )
 
         iam = aws_stack.connect_to_service("iam")
         resource = resources[resource_id]
@@ -292,9 +287,6 @@ class IAMRole(GenericBaseModel):
         policy_arns = props.get("ManagedPolicyArns", [])
         for arn in policy_arns:
             iam.attach_role_policy(RoleName=role_name, PolicyArn=arn)
-
-        # TODO: to be removed once we change the method signature to pass in the stack object directly!
-        stack = find_stack(stack_name)
 
         # add inline policies
         inline_policies = props.get("Policies", [])
@@ -314,7 +306,6 @@ class IAMRole(GenericBaseModel):
             # get policy document - make sure we're resolving references in the policy doc
             doc = dict(policy["PolicyDocument"])
             doc = remove_none_values(doc)
-            doc = resolve_refs_recursively(stack, doc)
 
             doc["Version"] = doc.get("Version") or IAM_POLICY_VERSION
             statements = ensure_list(doc["Statement"])
@@ -408,9 +399,7 @@ class IAMServiceLinkedRole(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         iam = aws_stack.connect_to_service("iam")
-        service_name = self.resolve_refs_recursively(
-            stack_name, self.props["AWSServiceName"], resources
-        )
+        service_name = self.props["AWSServiceName"]
         path = f"{SERVICE_LINKED_ROLE_PATH_PREFIX}/{service_name}"
         roles = iam.list_roles(PathPrefix=path)["Roles"]
         for role in roles:
@@ -449,7 +438,6 @@ class IAMPolicy(GenericBaseModel):
         def _create(resource_id, resources, resource_type, func, stack_name, *args, **kwargs):
             iam = aws_stack.connect_to_service("iam")
             props = resources[resource_id]["Properties"]
-            cls.resolve_refs_recursively(stack_name, props, resources)
             policy_doc = json.dumps(remove_none_values(props["PolicyDocument"]))
             policy_name = props["PolicyName"]
             for role in props.get("Roles", []):
@@ -489,7 +477,6 @@ class IAMPolicy(GenericBaseModel):
         if managed_policy:
             result["policy"] = iam.get_policy(PolicyArn=aws_stack.policy_arn(policy_name))
         for role in roles:
-            role = obj.resolve_refs_recursively(stack_name, role, resources)
             policies = (
                 _filter(iam.list_attached_role_policies(RoleName=role))
                 if managed_policy
@@ -497,7 +484,6 @@ class IAMPolicy(GenericBaseModel):
             )
             result["role:%s" % role] = policies
         for user in users:
-            user = obj.resolve_refs_recursively(stack_name, user, resources)
             policies = (
                 _filter(iam.list_attached_user_policies(UserName=user))
                 if managed_policy
@@ -505,7 +491,6 @@ class IAMPolicy(GenericBaseModel):
             )
             result["user:%s" % user] = policies
         for group in groups:
-            group = obj.resolve_refs_recursively(stack_name, group, resources)
             policies = (
                 _filter(iam.list_attached_group_policies(GroupName=group))
                 if managed_policy
@@ -609,9 +594,7 @@ class IAMGroup(GenericBaseModel):
         return self.props.get("GroupName")
 
     def fetch_state(self, stack_name, resources):
-        group_name = self.resolve_refs_recursively(
-            stack_name, self.props.get("GroupName"), resources
-        )
+        group_name = self.props.get("GroupName")
         return aws_stack.connect_to_service("iam").get_group(GroupName=group_name)["Group"]
 
     def update_resource(self, new_resource, stack_name, resources):

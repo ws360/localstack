@@ -18,7 +18,7 @@ class GatewayResponse(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         props = self.props
-        api_id = self.resolve_refs_recursively(stack_name, props["RestApiId"], resources)
+        api_id = props["RestApiId"]
         if not api_id:
             return
         client = aws_stack.connect_to_service("apigateway")
@@ -52,8 +52,8 @@ class GatewayRequestValidator(GenericBaseModel):
     def fetch_state(self, stack_name, resources):
         client = aws_stack.connect_to_service("apigateway")
         props = self.props
-        api_id = self.resolve_refs_recursively(stack_name, props["RestApiId"], resources)
-        name = self.resolve_refs_recursively(stack_name, props["Name"], resources)
+        api_id = props["RestApiId"]
+        name = props["Name"]
         result = client.get_request_validators(restApiId=api_id).get("items", [])
         result = [r for r in result if r.get("name") == name]
         return result[0] if result else None
@@ -107,7 +107,7 @@ class GatewayRestAPI(GenericBaseModel):
     def fetch_state(self, stack_name, resources):
         apis = aws_stack.connect_to_service("apigateway").get_rest_apis()["items"]
         api_name = self.props.get("Name") or self.logical_resource_id
-        api_name = self.resolve_refs_recursively(stack_name, api_name, resources)
+        api_name = api_name
         result = list(filter(lambda api: api["name"] == api_name, apis))
         return result[0] if result else None
 
@@ -168,7 +168,7 @@ class GatewayDeployment(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         api_id = self.props.get("RestApiId")
-        api_id = self.resolve_refs_recursively(stack_name, api_id, resources)
+        api_id = api_id
 
         if not api_id:
             return None
@@ -208,8 +208,8 @@ class GatewayResource(GenericBaseModel):
     def fetch_state(self, stack_name, resources):
         props = self.props
         api_id = props.get("RestApiId") or self.logical_resource_id
-        api_id = self.resolve_refs_recursively(stack_name, api_id, resources)
-        parent_id = self.resolve_refs_recursively(stack_name, props.get("ParentId"), resources)
+        api_id = api_id
+        parent_id = props.get("ParentId")
 
         if not api_id or not parent_id:
             return None
@@ -270,8 +270,8 @@ class GatewayMethod(GenericBaseModel):
     def fetch_state(self, stack_name, resources):
         props = self.props
 
-        api_id = self.resolve_refs_recursively(stack_name, props["RestApiId"], resources)
-        res_id = self.resolve_refs_recursively(stack_name, props["ResourceId"], resources)
+        api_id = props["RestApiId"]
+        res_id = props["ResourceId"]
         if not api_id or not res_id:
             return None
 
@@ -344,17 +344,11 @@ class GatewayMethod(GenericBaseModel):
 
             integration = props.get("Integration")
             if integration:
-                api_id = resource.resolve_refs_recursively(
-                    stack_name, props["RestApiId"], resources
-                )
-                res_id = resource.resolve_refs_recursively(
-                    stack_name, props["ResourceId"], resources
-                )
+                api_id = props["RestApiId"]
+                res_id = props["ResourceId"]
                 kwargs = {}
                 if integration.get("Uri"):
-                    uri = resource.resolve_refs_recursively(
-                        stack_name, integration.get("Uri"), resources
-                    )
+                    uri = integration.get("Uri")
 
                     # Moto has a validate method on Uri for integration_type "HTTP" | "HTTP_PROXY" that does not accept
                     # Uri value without path, we need to add path ("/") if not exists
@@ -387,12 +381,8 @@ class GatewayMethod(GenericBaseModel):
 
             responses = props.get("MethodResponses") or []
             for response in responses:
-                api_id = resource.resolve_refs_recursively(
-                    stack_name, props["RestApiId"], resources
-                )
-                res_id = resource.resolve_refs_recursively(
-                    stack_name, props["ResourceId"], resources
-                )
+                api_id = props["RestApiId"]
+                res_id = props["ResourceId"]
                 apigateway.put_method_response(
                     restApiId=api_id,
                     resourceId=res_id,
@@ -431,7 +421,7 @@ class GatewayStage(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         api_id = self.props.get("RestApiId") or self.logical_resource_id
-        api_id = self.resolve_refs_recursively(stack_name, api_id, resources)
+        api_id = api_id
         if not api_id:
             return None
         result = aws_stack.connect_to_service("apigateway").get_stage(
@@ -480,7 +470,7 @@ class GatewayUsagePlan(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         plan_name = self.props.get("UsagePlanName")
-        plan_name = self.resolve_refs_recursively(stack_name, plan_name, resources)
+        plan_name = plan_name
         result = aws_stack.connect_to_service("apigateway").get_usage_plans().get("items", [])
         result = [r for r in result if r["name"] == plan_name]
         return (result or [None])[0]
@@ -525,7 +515,7 @@ class GatewayApiKey(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         props = self.props
-        key_name = self.resolve_refs_recursively(stack_name, props.get("Name"), resources)
+        key_name = props.get("Name")
         cust_id = props.get("CustomerId")
         result = aws_stack.connect_to_service("apigateway").get_api_keys().get("items", [])
         result = [
@@ -572,11 +562,9 @@ class GatewayUsagePlanKey(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         client = aws_stack.connect_to_service("apigateway")
-        key_id = self.resolve_refs_recursively(stack_name, self.props.get("KeyId"), resources)
-        key_type = self.resolve_refs_recursively(stack_name, self.props.get("KeyType"), resources)
-        plan_id = self.resolve_refs_recursively(
-            stack_name, self.props.get("UsagePlanId"), resources
-        )
+        key_id = self.props.get("KeyId")
+        key_type = self.props.get("KeyType")
+        plan_id = self.props.get("UsagePlanId")
         result = client.get_usage_plan_keys(usagePlanId=plan_id).get("items", [])
         result = [r for r in result if r["id"] == key_id and key_type in [None, r.get("type")]]
         return (result or [None])[0]
@@ -679,13 +667,13 @@ class GatewayModel(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         client = aws_stack.connect_to_service("apigateway")
-        api_id = self.resolve_refs_recursively(stack_name, self.props["RestApiId"], resources)
+        api_id = self.props["RestApiId"]
 
         items = client.get_models(restApiId=api_id)["items"]
         if not items:
             return None
 
-        model_name = self.resolve_refs_recursively(stack_name, self.props["Name"], resources)
+        model_name = self.props["Name"]
         models = [item for item in items if item["name"] == model_name]
         if models:
             return models[0]

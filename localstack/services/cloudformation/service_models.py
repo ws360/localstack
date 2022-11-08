@@ -152,8 +152,3 @@ class GenericBaseModel:
         result = dict(self.properties)
         result.update(self.state or {})
         return result
-
-    # TODO: remove
-    @classmethod
-    def resolve_refs_recursively(cls, stack_name, value, resources):
-        return value

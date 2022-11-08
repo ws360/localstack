@@ -18,7 +18,7 @@ class SSMParameter(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         param_name = self.props.get("Name") or self.logical_resource_id
-        param_name = self.resolve_refs_recursively(stack_name, param_name, resources)
+        param_name = param_name
         return aws_stack.connect_to_service("ssm").get_parameter(Name=param_name)["Parameter"]
 
     @staticmethod

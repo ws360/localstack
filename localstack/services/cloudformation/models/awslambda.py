@@ -31,7 +31,7 @@ class LambdaFunction(GenericBaseModel):
         return "AWS::Lambda::Function"
 
     def fetch_state(self, stack_name, resources):
-        func_name = self.resolve_refs_recursively(stack_name, self.props["FunctionName"], resources)
+        func_name = self.props["FunctionName"]
         return aws_stack.connect_to_service("lambda").get_function(FunctionName=func_name)
 
     def get_physical_resource_id(self, attribute=None, **kwargs):
@@ -58,9 +58,7 @@ class LambdaFunction(GenericBaseModel):
             "VpcConfig",
         ]
         update_config_props = select_attributes(props, config_keys)
-        update_config_props = self.resolve_refs_recursively(
-            stack_name, update_config_props, resources
-        )
+        update_config_props = update_config_props
         if "Timeout" in update_config_props:
             update_config_props["Timeout"] = int(update_config_props["Timeout"])
         if "Code" in props:
@@ -198,8 +196,8 @@ class LambdaEventSourceMapping(GenericBaseModel):
         props = self.props
         source_arn = props.get("EventSourceArn")
         self_managed_src = props.get("SelfManagedEventSource")
-        function_name = self.resolve_refs_recursively(stack_name, props["FunctionName"], resources)
-        source_arn = self.resolve_refs_recursively(stack_name, source_arn, resources)
+        function_name = props["FunctionName"]
+        source_arn = source_arn
         if not function_name or (not source_arn and not self_managed_src):
             raise Exception("ResourceNotFound")
 
@@ -238,7 +236,7 @@ class LambdaPermission(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         props = self.props
-        func_name = self.resolve_refs_recursively(stack_name, props.get("FunctionName"), resources)
+        func_name = props.get("FunctionName")
         lambda_client = aws_stack.connect_to_service("lambda")
         return lambda_client.get_policy(FunctionName=func_name)
 
