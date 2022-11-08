@@ -157,33 +157,6 @@ class GenericBaseModel:
         result.update(self.state or {})
         return result
 
-    @property
-    def resource_id(self):
-        """Return the logical resource ID of this resource (i.e., the ref. name within the stack's resources)."""
-        return self.resource_json["LogicalResourceId"]
-
-    @classmethod
-    def update_from_cloudformation_json(
-        cls, original_resource, new_resource_name, cloudformation_json, region_name
-    ):
-        props = cloudformation_json.get("Properties", {})
-        for key, val in props.items():
-            snake_key = camel_to_snake_case(key)
-            lower_key = key.lower()
-            for candidate in [key, lower_key, snake_key]:
-                if hasattr(original_resource, candidate) or candidate == snake_key:
-                    setattr(original_resource, candidate, val)
-                    break
-        return original_resource
-
-    @classmethod
-    def create_from_cloudformation_json(cls, resource_name, resource_json, region_name):
-        return cls(
-            resource_name=resource_name,
-            resource_json=resource_json,
-            region_name=region_name,
-        )
-
     @classmethod
     def resolve_refs_recursively(cls, stack_name, value, resources):
         # TODO: restructure code to avoid circular import here

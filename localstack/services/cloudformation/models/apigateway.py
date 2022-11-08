@@ -106,7 +106,7 @@ class GatewayRestAPI(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         apis = aws_stack.connect_to_service("apigateway").get_rest_apis()["items"]
-        api_name = self.props.get("Name") or self.resource_id
+        api_name = self.props.get("Name") or self.logical_resource_id
         api_name = self.resolve_refs_recursively(stack_name, api_name, resources)
         result = list(filter(lambda api: api["name"] == api_name, apis))
         return result[0] if result else None
@@ -207,7 +207,7 @@ class GatewayResource(GenericBaseModel):
 
     def fetch_state(self, stack_name, resources):
         props = self.props
-        api_id = props.get("RestApiId") or self.resource_id
+        api_id = props.get("RestApiId") or self.logical_resource_id
         api_id = self.resolve_refs_recursively(stack_name, api_id, resources)
         parent_id = self.resolve_refs_recursively(stack_name, props.get("ParentId"), resources)
 
@@ -430,7 +430,7 @@ class GatewayStage(GenericBaseModel):
         return "AWS::ApiGateway::Stage"
 
     def fetch_state(self, stack_name, resources):
-        api_id = self.props.get("RestApiId") or self.resource_id
+        api_id = self.props.get("RestApiId") or self.logical_resource_id
         api_id = self.resolve_refs_recursively(stack_name, api_id, resources)
         if not api_id:
             return None
