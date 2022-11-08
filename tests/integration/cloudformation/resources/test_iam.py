@@ -161,3 +161,12 @@ def test_managed_policy_with_empty_resource(iam_client, deploy_cfn_template, sna
     policy_arn = stack.outputs["PolicyArn"]
     policy = iam_client.get_policy(PolicyArn=policy_arn)
     snapshot.match("managed_policy", policy)
+
+def test_iam_user_resolve(iam_client, cfn_client, deploy_cfn_template):
+    user_name = f"user-{short_uid()}"
+    stack = deploy_cfn_template(
+        template_path=os.path.join(os.path.dirname(__file__), "../../templates/cfn_iam_user.yaml"),
+        parameters={"UserName": user_name}
+    )
+
+    assert stack.outputs['UserNameOutput'] == user_name

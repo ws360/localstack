@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  UserName:
+    Type: String
+
+Resources:
+  MyUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref UserName
+
+Outputs:
+  UserNameOutput:
+    Value:
+      Ref: MyUser
