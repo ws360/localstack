@@ -278,7 +278,7 @@ class IAMRole(GenericBaseModel):
     @staticmethod
     def _post_create(resource_id, resources, resource_type, func, stack_name):
         """attaches managed policies from the template to the role"""
-        from localstack.utils.cloudformation.template_deployer import (
+        from localstack.services.cloudformation.template_deployer import (
             find_stack,
             resolve_refs_recursively,
         )

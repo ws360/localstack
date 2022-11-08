@@ -9,7 +9,6 @@ from botocore.parsers import ResponseParserError
 
 from localstack.aws.accounts import get_aws_account_id
 from localstack.utils.aws import aws_stack
-from localstack.utils.cloudformation import template_preparer
 from localstack.utils.common import load_file, short_uid
 from localstack.utils.testutil import create_zip_file, list_all_resources
 
@@ -265,11 +264,9 @@ Resources:
 # Note: Do not add new tests here !
 class TestCloudFormation:
     def test_validate_template(self, cfn_client):
-        template = template_preparer.template_to_json(
-            load_file(
+        template = load_file(
                 os.path.join(os.path.dirname(__file__), "../../templates/valid_template.json")
             )
-        )
         resp = cfn_client.validate_template(TemplateBody=template)
 
         assert resp["ResponseMetadata"]["HTTPStatusCode"] == 200

@@ -23,7 +23,7 @@ from localstack.services.cloudformation.service_models import (
     GenericBaseModel,
 )
 from localstack.utils.aws import aws_stack
-from localstack.utils.cloudformation import template_preparer
+from localstack.services.cloudformation import template_preparer
 from localstack.utils.collections import merge_recursive
 from localstack.utils.functions import prevent_stack_overflow, run_safe
 from localstack.utils.json import clone_safe, json_safe

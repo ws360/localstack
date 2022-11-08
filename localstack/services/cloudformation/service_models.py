@@ -1,10 +1,6 @@
 import logging
 
-# TODO: remove
-from moto.cloudformation.exceptions import UnformattedGetAttTemplateException
-
 from localstack.utils.aws import aws_stack
-from localstack.utils.common import camel_to_snake_case
 
 LOG = logging.getLogger(__name__)
 
@@ -94,7 +90,7 @@ class GenericBaseModel:
     # ----------------------
 
     def get_cfn_attribute(self, attribute_name):
-        """Retrieve the given CF attribute for this resource (inherited from moto's CloudFormationModel)"""
+        """Retrieve the given CF attribute for this resource"""
         if attribute_name in REF_ARN_ATTRS and hasattr(self, "arn"):
             return self.arn
         if attribute_name in REF_ATTRS:
@@ -105,14 +101,14 @@ class GenericBaseModel:
         if attribute_name in props:
             return props.get(attribute_name)
 
-        raise UnformattedGetAttTemplateException()
+        #raise UnformattedGetAttTemplateException() # ?????
 
     # ---------------------
     # GENERIC UTIL METHODS
     # ---------------------
 
     def fetch_and_update_state(self, *args, **kwargs):
-        from localstack.utils.cloudformation import template_deployer
+        from localstack.services.cloudformation import template_deployer
 
         try:
             state = self.fetch_state(*args, **kwargs)
@@ -161,7 +157,7 @@ class GenericBaseModel:
     def resolve_refs_recursively(cls, stack_name, value, resources):
         # TODO: restructure code to avoid circular import here
         from localstack.services.cloudformation.provider import find_stack
-        from localstack.utils.cloudformation.template_deployer import resolve_refs_recursively
+        from localstack.services.cloudformation.template_deployer import resolve_refs_recursively
 
         stack = find_stack(stack_name)
         return resolve_refs_recursively(stack, value)

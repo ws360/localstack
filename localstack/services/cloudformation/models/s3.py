@@ -12,7 +12,7 @@ from localstack.services.cloudformation.deployment_utils import (
 from localstack.services.cloudformation.service_models import GenericBaseModel
 from localstack.services.s3 import s3_listener, s3_utils
 from localstack.utils.aws import aws_stack
-from localstack.utils.cloudformation.cfn_utils import rename_params
+from localstack.services.cloudformation.cfn_utils import rename_params
 from localstack.utils.common import canonical_json, md5
 from localstack.utils.testutil import delete_all_s3_objects
 

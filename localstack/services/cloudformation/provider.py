@@ -66,9 +66,9 @@ from localstack.aws.api.cloudformation import (
 )
 from localstack.services.cloudformation.stores import CloudFormationStore, cloudformation_stores
 from localstack.utils.aws import aws_stack
-from localstack.utils.cloudformation import template_deployer, template_preparer
-from localstack.utils.cloudformation.template_deployer import NoStackUpdates
-from localstack.utils.cloudformation.template_preparer import (
+from localstack.services.cloudformation import template_deployer, template_preparer
+from localstack.services.cloudformation.template_deployer import NoStackUpdates
+from localstack.services.cloudformation.template_preparer import (
     get_template_body,
     prepare_template_body,
     template_to_json,

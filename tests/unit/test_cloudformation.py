@@ -7,7 +7,7 @@ from localstack.services.cloudformation.deployment_utils import (
 )
 from localstack.services.cloudformation.models.stepfunctions import _apply_substitutions
 from localstack.services.cloudformation.provider import Stack
-from localstack.utils.cloudformation import template_deployer, template_preparer
+from localstack.services.cloudformation import template_deployer, template_preparer
 
 
 def test_resolve_references():
