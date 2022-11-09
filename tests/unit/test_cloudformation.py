@@ -1,13 +1,13 @@
 import re
 from typing import Dict
 
+from localstack.services.cloudformation import template_deployer, template_preparer
 from localstack.services.cloudformation.deployment_utils import (
     PLACEHOLDER_AWS_NO_VALUE,
     remove_none_values,
 )
 from localstack.services.cloudformation.models.stepfunctions import _apply_substitutions
 from localstack.services.cloudformation.provider import Stack
-from localstack.services.cloudformation import template_deployer, template_preparer
 
 
 def test_resolve_references():

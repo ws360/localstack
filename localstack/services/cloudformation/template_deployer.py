@@ -10,6 +10,7 @@ import botocore
 from localstack import config
 from localstack.aws.accounts import get_aws_account_id
 from localstack.constants import FALSE_STRINGS
+from localstack.services.cloudformation import template_preparer
 from localstack.services.cloudformation.deployment_utils import (
     PLACEHOLDER_AWS_NO_VALUE,
     PLACEHOLDER_RESOURCE_NAME,
@@ -23,7 +24,6 @@ from localstack.services.cloudformation.service_models import (
     GenericBaseModel,
 )
 from localstack.utils.aws import aws_stack
-from localstack.services.cloudformation import template_preparer
 from localstack.utils.collections import merge_recursive
 from localstack.utils.functions import prevent_stack_overflow, run_safe
 from localstack.utils.json import clone_safe, json_safe

@@ -101,7 +101,7 @@ class GenericBaseModel:
         if attribute_name in props:
             return props.get(attribute_name)
 
-        #raise UnformattedGetAttTemplateException() # ?????
+        # raise UnformattedGetAttTemplateException() # ?????
 
     # ---------------------
     # GENERIC UTIL METHODS

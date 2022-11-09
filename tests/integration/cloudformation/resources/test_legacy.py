@@ -265,8 +265,8 @@ Resources:
 class TestCloudFormation:
     def test_validate_template(self, cfn_client):
         template = load_file(
-                os.path.join(os.path.dirname(__file__), "../../templates/valid_template.json")
-            )
+            os.path.join(os.path.dirname(__file__), "../../templates/valid_template.json")
+        )
         resp = cfn_client.validate_template(TemplateBody=template)
 
         assert resp["ResponseMetadata"]["HTTPStatusCode"] == 200
