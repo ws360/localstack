@@ -1,0 +1,17 @@
+version: '3.4'
+services:
+  nginx:
+    ports:
+      - 8000:8080
+      - 21:21
+    restart: always
+  netbox:
+    restart: always
+  netbox-worker:
+    restart: always
+  postgres:
+    restart: always
+  redis:
+    restart: always
+  redis-cache:
+    restart: always
