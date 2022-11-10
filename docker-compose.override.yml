@@ -9,7 +9,6 @@ services:
       - EDGE_PORT=4566
       - SERVICES=lambda,s3,ec2
     ports:
-      - EDGE_BIND_HOST=165.105.0.7
       - '4566-4583:4566-4583'
     volumes:
       - "${TEMPDIR:-/tmp/localstack}:/tmp/localstack"
