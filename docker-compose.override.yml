@@ -1,4 +1,5 @@
 version: "3.8"
 services:
   localstack:
-    restart: always
+    environment:
+      - LOCALSTACK_PERSISTENCE=1
