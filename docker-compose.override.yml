@@ -9,7 +9,7 @@ services:
       - EDGE_PORT=4566
       - SERVICES=lambda,s3,ec2
     ports:
-      - '4566-4583:4566-4583'
+      - '8080:8080'
     volumes:
       - "${TEMPDIR:-/tmp/localstack}:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
