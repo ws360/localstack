@@ -6,7 +6,6 @@ services:
     image: localstack/localstack-full
     environment:
       - AWS_DEFAULT_REGION=us-east-1
-      - EDGE_PORT=4566
       - SERVICES=lambda,s3,ec2
     ports:
       - '8080:8080'
